@@ -21,26 +21,26 @@ const expEval = (exp) => {
   let reversedExp = exp.split(' ').reverse().join(' ');
   // look ahead verifies negative numbers are not included in the match
   let matchResult = reversedExp.match(/(\+|-)(?=(\s))/);
-  // proceed if the above is not null
-  if (matchResult) {
+  // encapsulate this behavior to use in if and else if conditions below
+  const mathPlusNewExp = (result, exp) => {
     // identify math operator
-    operator = matchResult[0];
+    operator = result;
     // collect numbers to operate with in an array
     miniExp = exp.split(" ").reverse().slice(0, exp.split(" ").reverse().indexOf(operator));
     // evaluate the operation expression
     sum = miniExp.reduce((prev, current) => eval(`${current} ${operator} ${prev}`));
     // create new array with 1 less operator, with sum of operation expression in its place
-    newExpArr = [...exp.split(' ').reverse().slice(exp.split(" ").reverse().indexOf(operator)+1).reverse(), sum];
+    return [...exp.split(' ').reverse().slice(exp.split(" ").reverse().indexOf(operator) + 1).reverse(), sum];
+  }
+  // proceed if the above is not null
+  if (matchResult) {
+    newExpArr = mathPlusNewExp(matchResult[0], exp);
     // format new expression array to then pass as argument in recursion call
     newArg = newExpArr.join(" ");
     return expEval(newArg);
-
   // if matchResult is null but there is only 1 operator left, the above regex won't work bc of the lookahead, so check the non-reversed version, repeat each line of the above
   } else if (exp.match(/(\+|-)(?=(\s))/)) {
-    operator = exp.match(/(\+|-)(?=(\s))/)[0];
-    miniExp = exp.split(" ").reverse().slice(0, exp.split(" ").reverse().indexOf(operator));
-    sum = miniExp.reduce((prev, current) => eval(`${current} ${operator} ${prev}`));
-    newExpArr = [...exp.split(' ').reverse().slice(exp.split(" ").reverse().indexOf(operator) + 1).reverse(), sum];
+    newExpArr = mathPlusNewExp(exp.match(/(\+|-)(?=(\s))/)[0], exp);
     // if length > 1, that means there is more to evaluate
     if (newExpArr.length > 1) {
       newArg = newExpArr.join(" ");
@@ -54,5 +54,5 @@ const expEval = (exp) => {
     return parseInt(exp);
   }
 }
-
+// test expression string
 console.log(expEval("+ 5 - 5 + 22 - 100 + 200 - 10000 5555"))
