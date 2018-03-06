@@ -11,39 +11,46 @@ formatting assumptions:
 */
 
 const expEval = (exp) => {
-  let second_sum;
-  let first_sum;
-  let firstOperator;
+  let sum;
+  let operator;
   let miniExp;
-  let newExpArr;
   let newArg;
+  let newExpArr;
+
+  // we need to start operations on the last numbers first, so reversing makes this easier.
   let reversedExp = exp.split(' ').reverse().join(' ');
   // look ahead verifies negative numbers are not included in the match
   let matchResult = reversedExp.match(/(\+|-)(?=(\s))/);
   // proceed if the above is not null
   if (matchResult) {
-    firstOperator = matchResult[0];
-    miniExp = exp.split(" ").reverse().slice(0, exp.split(" ").reverse().indexOf(firstOperator));
-    first_sum = miniExp.reduce((prev, current) => eval(`${current} ${firstOperator} ${prev}`));
-    newExpArr = [...exp.split(' ').reverse().slice(exp.split(" ").reverse().indexOf(firstOperator)+1).reverse(), first_sum];
+    // identify math operator
+    operator = matchResult[0];
+    // collect numbers to operate with in an array
+    miniExp = exp.split(" ").reverse().slice(0, exp.split(" ").reverse().indexOf(operator));
+    // evaluate the operation expression
+    sum = miniExp.reduce((prev, current) => eval(`${current} ${operator} ${prev}`));
+    // create new array with 1 less operator, with sum of operation expression in its place
+    newExpArr = [...exp.split(' ').reverse().slice(exp.split(" ").reverse().indexOf(operator)+1).reverse(), sum];
+    // format new expression array to then pass as argument in recursion call
+    newArg = newExpArr.join(" ");
+    return expEval(newArg);
+
+  // if matchResult is null but there is only 1 operator left, the above regex won't work bc of the lookahead, so check the non-reversed version, repeat each line of the above
+  } else if (exp.match(/(\+|-)(?=(\s))/)) {
+    operator = exp.match(/(\+|-)(?=(\s))/)[0];
+    miniExp = exp.split(" ").reverse().slice(0, exp.split(" ").reverse().indexOf(operator));
+    sum = miniExp.reduce((prev, current) => eval(`${current} ${operator} ${prev}`));
+    newExpArr = [...exp.split(' ').reverse().slice(exp.split(" ").reverse().indexOf(operator) + 1).reverse(), sum];
+    // if length > 1, that means there is more to evaluate
+    if (newExpArr.length > 1) {
       newArg = newExpArr.join(" ");
       return expEval(newArg);
-
-
-  } else if (exp.match(/(\+|-)(?=(\s))/)) {
-    let secondOperator = exp.match(/(\+|-)(?=(\s))/)[0];
-    let miniExp2 = exp.split(" ").reverse().slice(0, exp.split(" ").reverse().indexOf(secondOperator));
-    second_sum = miniExp2.reduce((prev, current) => {
-      return eval(`${current} ${secondOperator} ${prev}`);
-    });
-    let newerExpArr = [...exp.split(' ').reverse().slice(exp.split(" ").reverse().indexOf(secondOperator) + 1).reverse(), second_sum];
-    if (newerExpArr.length > 1) {
-      newArg = newerExpArr.join(" ");
-      return expEval(newArg);
     } else {
-      return second_sum;
+    // if we wind up here, that means there are no operators left to use and we have found our total
+      return sum;
     }
   } else {
+    // if we wind up here, we weren't given an operator and we just display the number given
     return parseInt(exp);
   }
 }
