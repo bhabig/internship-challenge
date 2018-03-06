@@ -55,4 +55,4 @@ const expEval = (exp) => {
   }
 }
 // test expression string
-console.log(expEval("+ 5 - 5 + 22 - 100 + 200 - 10000 5555"))
+console.log(expEval("+ -5 -10"))
